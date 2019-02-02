@@ -69,7 +69,7 @@ impl Geml {
     pub fn deserialize(s: String) -> Vec<Geml> {
         lazy_static!{
             static ref TAGS: Regex = reg(r"^#\[(.+?)\((.+?)\)\]");
-            static ref RMWS: Regex = reg(r"\s*([\s\S]*)\s*");
+            static ref RMWS: Regex = reg(r"\s+([\s\S]*)\s+");
         }
         s.split('$').collect::<Vec<&str>>()[1..]
             .windows(2)
@@ -105,6 +105,6 @@ impl Geml {
     }
 
     pub fn to_HTML(&self) -> Result<String, String> {
-        self.parse()?.value.clone()
+        Ok(self.parse()?.value.clone())
     }
 }
