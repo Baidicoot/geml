@@ -75,7 +75,6 @@ impl Geml {
             .chunks(2)
             .filter(|x| (x.len() == 2))
             .map(|x| {
-                println!("x: {:?}", &x);
                 let mut val_start = 0;
                 let mut tags = HashMap::new();
                 for cap in TAGS.captures_iter(&x[1]) {
