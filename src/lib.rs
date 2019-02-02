@@ -103,4 +103,8 @@ impl Geml {
             value: value,
         })
     }
+
+    pub fn to_HTML(&self) -> Result<String, String> {
+        self.parse()?.value.clone()
+    }
 }
