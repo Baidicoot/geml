@@ -8,5 +8,5 @@ fn main() {
 $test1$
 *stuff*, __stuff__, stuff.
 "#);
-    println!("{:?}", GemlFile::from_string(geml_str, Path::new("test")).unwrap().parse().unwrap());
+    println!("{:?}", GemlFile::from_path(Path::new("test.geml")));
 }

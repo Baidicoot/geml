@@ -69,11 +69,13 @@ impl Geml {
     pub fn deserialize(s: String) -> Vec<Geml> {
         lazy_static!{
             static ref TAGS: Regex = reg(r"^#\[(.+?)\((.+?)\)\]");
-            static ref RMWS: Regex = reg(r"\s+([\s\S]*)\s+");
+            static ref RMWS: Regex = reg(r"\s*([\s\S]*)\s*");
         }
         s.split('$').collect::<Vec<&str>>()[1..]
-            .windows(2)
+            .chunks(2)
+            .filter(|x| (x.len() == 2))
             .map(|x| {
+                println!("x: {:?}", &x);
                 let mut val_start = 0;
                 let mut tags = HashMap::new();
                 for cap in TAGS.captures_iter(&x[1]) {
