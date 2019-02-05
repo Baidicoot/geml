@@ -26,16 +26,16 @@ pub struct GemlFile {
 }
 
 #[derive(Debug)]
-pub enum GemlErrorKind {
+pub enum GemlError {
     IoError(String),
     MarkdownError(&'static str),
     HtmlError(&'static str),
     ParseError(&'static str),
 }
 
-impl GemlErrorKind {
+impl GemlError {
     pub fn unwrap(&self) -> &str {
-        use crate::GemlErrorKind::*;
+        use crate::GemlError::*;
         match self {
             IoError(x) => &x,
             MarkdownError(x) => x,
@@ -45,29 +45,26 @@ impl GemlErrorKind {
     }
 }
 
-#[derive(Debug)]
-pub struct GemlParseError(pub GemlErrorKind);
-
-impl fmt::Display for GemlParseError {
+impl fmt::Display for GemlError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
     }
 }
 
-impl error::Error for GemlParseError {
+impl error::Error for GemlError {
     fn description(&self) -> &str {
-        self.0.unwrap()
+        self.unwrap()
     }
 }
 
-impl From<io::Error> for GemlParseError {
-    fn from(err: io::Error) -> GemlParseError {
-        use crate::GemlErrorKind::*;
-        GemlParseError(IoError(err.to_string()))
+impl From<io::Error> for GemlError {
+    fn from(err: io::Error) -> GemlError {
+        use crate::GemlError::*;
+        IoError(err.to_string())
     }
 }
 
-pub type Result<T> = std::result::Result<T, GemlParseError>;
+pub type Result<T> = std::result::Result<T, GemlError>;
 
 impl GemlFile {
     pub fn from_path(path: &Path) -> Result<GemlFile> {
