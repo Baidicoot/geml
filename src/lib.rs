@@ -46,7 +46,7 @@ impl GemlErrorKind {
 }
 
 #[derive(Debug)]
-pub struct GemlParseError(GemlErrorKind);
+pub struct GemlParseError(pub GemlErrorKind);
 
 impl fmt::Display for GemlParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
