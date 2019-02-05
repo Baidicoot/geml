@@ -6,7 +6,10 @@ mod markdown;
 use regex::{Regex, RegexBuilder};
 use std::path::{Path, PathBuf};
 use std::collections::HashMap;
+use std::error;
+use std::io;
 use std::fs;
+use std::fmt;
 
 //mod markdown;
 
@@ -22,14 +25,60 @@ pub struct GemlFile {
     pub metadata: Metadata,
 }
 
+#[derive(Debug)]
+pub enum GemlErrorKind {
+    IoError(String),
+    MarkdownError(&'static str),
+    HtmlError(&'static str),
+    ParseError(&'static str),
+}
+
+impl GemlErrorKind {
+    pub fn unwrap(&self) -> &str {
+        use crate::GemlErrorKind::*;
+        match self {
+            IoError(x) => &x,
+            MarkdownError(x) => x,
+            HtmlError(x) => x,
+            ParseError(x) => x,
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct GemlParseError {
+    details: GemlErrorKind,
+}
+
+impl fmt::Display for GemlParseError {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self.details)
+    }
+}
+
+impl error::Error for GemlParseError {
+    fn description(&self) -> &str {
+        self.details.unwrap()
+    }
+}
+
+impl From<io::Error> for GemlParseError {
+    fn from(err: io::Error) -> GemlParseError {
+        use crate::GemlErrorKind::*;
+        GemlParseError { details: IoError(err.to_string()) }
+    }
+}
+
+pub type Result<T> = std::result::Result<T, GemlParseError>;
+
 impl GemlFile {
-    pub fn from_path(path: &Path) -> std::io::Result<GemlFile> {
+    pub fn from_path(path: &Path) -> Result<GemlFile> {
         let content = String::from_utf8_lossy(&fs::read(&path)?).to_string();
         GemlFile::from_string(content, path)
     }
 
-    pub fn from_string(content: String, path: &Path) -> std::io::Result<GemlFile> {
-        let gemls = Geml::deserialize(content);
+    pub fn from_string(content: String, path: &Path) -> Result<GemlFile> {
+        let gemls = Geml::deserialize(content)?;
         let pathbuf = path.to_owned();
         let metadata = Metadata { pathbuf, };
         Ok(GemlFile {
@@ -38,7 +87,7 @@ impl GemlFile {
         })
     }
 
-    pub fn parse(&self) -> Result<GemlFile, String> {
+    pub fn parse(&self) -> Result<GemlFile> {
         let mut gemls: Vec<Geml> = vec![];
         for g in self.gemls.iter() {
             gemls.push(g.parse()?);
@@ -66,12 +115,12 @@ fn reg(s: &str) -> regex::Regex {
 }
 
 impl Geml {
-    pub fn deserialize(s: String) -> Vec<Geml> {
+    pub fn deserialize(s: String) -> Result<Vec<Geml>> {
         lazy_static!{
             static ref TAGS: Regex = reg(r"^#\[(.+?)\((.+?)\)\]");
             static ref RMWS: Regex = reg(r"\s*([\s\S]*)\s*");
         }
-        s.split('$').collect::<Vec<&str>>()[1..]
+        Ok(s.split('$').collect::<Vec<&str>>()[1..]
             .chunks(2)
             .filter(|x| (x.len() == 2))
             .map(|x| {
@@ -90,10 +139,10 @@ impl Geml {
                     value,
                     tags,
                 }
-            }).collect()
+            }).collect())
     }
 
-    pub fn parse(&self) -> Result<Geml, String> {
+    pub fn parse(&self) -> Result<Geml> {
         let mut value = self.value.clone();
         if self.tags.get(&"markdown".to_owned()).unwrap_or(&"enabled".to_owned()) == &"enabled".to_owned() {
             value = markdown::parse(value);
@@ -105,7 +154,7 @@ impl Geml {
         })
     }
 
-    pub fn to_HTML(&self) -> Result<String, String> {
+    pub fn to_HTML(&self) -> Result<String> {
         Ok(self.parse()?.value.clone())
     }
 }
