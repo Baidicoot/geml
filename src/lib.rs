@@ -154,7 +154,7 @@ impl Geml {
         })
     }
 
-    pub fn to_HTML(&self) -> Result<String> {
+    pub fn to_html(&self) -> Result<String> {
         Ok(self.parse()?.value.clone())
     }
 }
