@@ -74,7 +74,7 @@ fn emphasis_replacer(cap: &Captures) -> String {
     format!("<{}>{}</{}>", if{cap[1].len()==1}{"em"}else{"strong"}, &cap[2], if{cap[1].len()==1}{"em"}else{"strong"})
 }
 
-fn rule_replacer(cap: &Captures) -> String {
+fn rule_replacer(_cap: &Captures) -> String {
     format!("\n<hr />")
 }
 
