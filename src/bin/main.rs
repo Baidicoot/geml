@@ -4,7 +4,7 @@ use geml::GemlFile;
 use std::path::Path;
 
 fn main() {
-    let geml_str = String::from(r#"
+    let _geml_str = String::from(r#"
 $test1$
 *stuff*, __stuff__, stuff.
 "#);
