@@ -46,26 +46,24 @@ impl GemlErrorKind {
 }
 
 #[derive(Debug)]
-pub struct GemlParseError {
-    details: GemlErrorKind,
-}
+pub struct GemlParseError(GemlErrorKind);
 
 impl fmt::Display for GemlParseError {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self.details)
+        write!(f, "{:?}", self)
     }
 }
 
 impl error::Error for GemlParseError {
     fn description(&self) -> &str {
-        self.details.unwrap()
+        self.0.unwrap()
     }
 }
 
 impl From<io::Error> for GemlParseError {
     fn from(err: io::Error) -> GemlParseError {
         use crate::GemlErrorKind::*;
-        GemlParseError { details: IoError(err.to_string()) }
+        GemlParseError(IoError(err.to_string()))
     }
 }
 
