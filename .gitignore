@@ -2,3 +2,4 @@
 /src/bin
 **/*.rs.bk
 test.geml
+output.html

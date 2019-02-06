@@ -3,9 +3,11 @@ extern crate regex;
 use regex::{Regex, Captures};
 use crate::reg;
 
+mod rust_syntax;
+
 //All of the Regexs
 lazy_static!{
-    static ref CODE_BLOCK: Regex = reg(r"```(\s*)([\s\S]*?)(\s*)```");
+    static ref CODE_BLOCK: Regex = reg(r"```(\S*)\s*([\s\S]*?)\s*```");
 
     static ref CODE_INLINE: Regex = reg(r"(`)(.*?)(`)");
 
@@ -26,6 +28,8 @@ lazy_static!{
     static ref ORDERED: Regex = reg(r"(\n\s*([0-9]+\.)\s.*)+");
 
     static ref BREAK: Regex = reg(r"\n\s*\n");
+
+    static ref PARAGRAPH: Regex = reg(r"\n\n([\s\S]+?)\n\n");
 
     /* Markdown or HTML reserved symbols */
     static ref LT: Regex = reg(r"<");
@@ -54,8 +58,16 @@ fn symbols(s: &str) -> String {
 
 /* The replacer functions */
 
+fn paragraph_replacer(cap: &Captures) -> String {
+    format!("<p>{}</p>", &cap[1])
+}
+
 fn code_block_replacer(cap: &Captures) -> String {
-    format!("<pre>{}</pre>", symbols(&cap[2]))
+    let code = match &cap[1] {
+        "rust" => rust_syntax::parse(symbols(&cap[2])),
+        _ => symbols(&cap[2]),
+    };
+    format!("<pre>{}</pre>", code)
 }
 
 fn code_inline_replacer(cap: &Captures) -> String {
@@ -96,12 +108,16 @@ fn ordered_replacer(cap: &Captures) -> String {
 
 //The main format function; call this to get markdown with the best results
 pub fn parse(s: String) -> String {
-    replace::unordered(replace::ordered(replace::rules(replace::emphasis(replace::headings(replace::links(replace::code_inline(replace::code_blocks(s))))))))
+    replace::paragraphs(replace::unordered(replace::ordered(replace::rules(replace::emphasis(replace::headings(replace::links(replace::code_inline(replace::code_blocks(s)))))))))
 }
 
 //Individual markdown replacement functions.
 pub mod replace {
     use crate::markdown::*;
+
+    pub fn paragraphs(s: String) -> String {
+        PARAGRAPH.replace_all(&s, &paragraph_replacer).to_string()
+    }
 
     pub fn code_blocks(s: String) -> String {
         CODE_BLOCK.replace_all(&s, &code_block_replacer).to_string()
