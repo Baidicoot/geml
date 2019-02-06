@@ -13,7 +13,7 @@ lazy_static!{
 
     static ref LINK: Regex = reg(r"\[([^\[]+)\]\(([^\)]+)\)");
 
-    static ref HEADING: Regex = reg(r"\n(#+)\s*(.+)");
+    static ref HEADING: Regex = reg(r"\n(#+)[^\S\r\n]+(.+)");
 
     static ref EMPHASIS: Regex = reg(r"(\*{1,2})(.*?)(\*{1,2})");
 
@@ -21,7 +21,7 @@ lazy_static!{
 
     static ref STRIKETHROUGH: Regex = reg(r"(\~\~)(.*?)(\~\~)");
 
-    static ref HORIZONTAL: Regex = reg(r"\n((\-{3,})|(={3,}))");
+    static ref HORIZONTAL: Regex = reg(r"\n((\-{3,})|(={3,})|(#{3,}))");
 
     static ref UNORDERED: Regex = reg(r"(\n\s*(\-|\+)\s.*)+");
 
@@ -29,7 +29,7 @@ lazy_static!{
 
     static ref BREAK: Regex = reg(r"\n\s*\n");
 
-    static ref PARAGRAPH: Regex = reg(r"\n\n([\s\S]+?)\n\n");
+    static ref PARAGRAPH: Regex = reg(r"(\r\n\r\n|\n\n)([\s\S]+?)(\r\n\r\n|\n\n)");
 
     /* Markdown or HTML reserved symbols */
     static ref LT: Regex = reg(r"<");
@@ -49,17 +49,23 @@ lazy_static!{
     static ref HYP: Regex = reg(r"-");
 
     static ref HASH: Regex = reg(r"#");
+
+    static ref LFEED: Regex = reg(r"(\r\n|\n)");
 }
 
 //function to replace HTML or Markdown reserved symbols
 fn symbols(s: &str) -> String {
-    HYP.replace_all(&EQL.replace_all(&TIC.replace_all(&UND.replace_all(&AST.replace_all(&LT.replace_all(&GT.replace_all(&HASH.replace_all(&AMP.replace_all(s, "&amp;"), "&#35;"), "&gt;"), "&lt;"), "&#42;"), "&#95;"), "&#96;"), "&#61;"), "&#45;").to_string()
+    LFEED.replace_all(&HYP.replace_all(&EQL.replace_all(&TIC.replace_all(&UND.replace_all(&AST.replace_all(&LT.replace_all(&GT.replace_all(&HASH.replace_all(&AMP.replace_all(s, "&amp;"), "&#35;"), "&gt;"), "&lt;"), "&#42;"), "&#95;"), "&#96;"), "&#61;"), "&#45;"), "&#10;").to_string()
 }
 
 /* The replacer functions */
 
+fn break_replacer(cap: &str) -> String {
+    LFEED.replace_all(cap, "<br />").to_string()
+}
+
 fn paragraph_replacer(cap: &Captures) -> String {
-    format!("<p>{}</p>", &cap[1])
+    format!("<p>{}</p>", break_replacer(&cap[2]))
 }
 
 fn code_block_replacer(cap: &Captures) -> String {
