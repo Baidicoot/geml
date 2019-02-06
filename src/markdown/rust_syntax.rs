@@ -6,25 +6,25 @@ lazy_static!{
 
     static ref METHOD: Regex = reg(r"((\w|(&#95;))+)\.");
 
-    static ref OPERAND: Regex = reg(r": ((\w|(&#95;))+)");
+    static ref OPERAND: Regex = reg(r": ((\w|&#95;|&amp;)+)");
 
-    static ref RETURNED: Regex = reg(r"&#45;&gt; ((\w|(&#95;))+)");
+    static ref RETURNED: Regex = reg(r"&#45;&gt; ((\w|&#95;|&amp;)+)");
 
-    static ref COMMENT: Regex = reg(r"/&#42;([\s\S]*?)&#42;/");
+    static ref MULTILINE_COMMENT: Regex = reg(r"/&#42;([\s\S]*?)&#42;/");
 
-    static ref MODULE: Regex = reg(r"((\w|(&#95;))+)::");
+    static ref COMMENT: Regex = reg(r"//([\s\S]*?)\n");
 
-    static ref MACRO: Regex = reg(r"((\w|(&#95;))+)!\(");
+    static ref MODULE: Regex = reg(r"((\w|&#95;)+)::");
 
-    static ref CAPS: Regex = reg(r"((A-Z|(&#95;))++)");
+    static ref MACRO: Regex = reg(r"((\w|&#95;)+)!\(");
 
     static ref STRING: Regex = reg(r#""([\s\S]*?)""#);
 
-    static ref KEYWORDS: Regex = reg(r"(^|\s)(abstract|alignof|as|become|box|break|const|continue|crate|do|else|enum|extern|false|final|fn|for|if|impl|in|let|loop|macro|match|mod|move|mut|offsetof|override|priv|proc|pub|pure|ref|return|Self|self|sizeof|static|struct|super|trait|true|type|typeof|unsafe|unsized|use|virtual|where|while|yield)");
+    static ref KEYWORDS: Regex = reg(r"(abstract|alignof|as|become|box|break|const|continue|crate|do|else|enum|extern|false|final|fn|for|if|impl|in|let|loop|macro|match|mod|move|mut|offsetof|override|priv|proc|pub|pure|ref|return|Self|self|sizeof|static|struct|super|trait|true|type|typeof|unsafe|unsized|use|virtual|where|while|yield)(::|\s)");
 }
 
 fn replace_keywords(cap: &Captures) -> String {
-    format!("<span class='keyword'>{}</span>", &cap[0])
+    format!("<span class='keyword'>{}</span>{}", &cap[1], &cap[2])
 }
 
 fn replace_func(cap: &Captures) -> String {
@@ -43,8 +43,12 @@ fn replace_returned(cap: &Captures) -> String {
     format!("-> <span class='type'>{}</span>", &cap[1])
 }
 
+fn replace_multiline_comment(cap: &Captures) -> String {
+    format!("<span class='comment'>/*{}*/</span>", &cap[1])
+}
+
 fn replace_comment(cap: &Captures) -> String {
-    format!("/*<span class='comment'>{}</span>*/", &cap[1])
+    format!("<span class='comment'>//{}</span>\n", &cap[1])
 }
 
 fn replace_module(cap: &Captures) -> String {
@@ -52,11 +56,7 @@ fn replace_module(cap: &Captures) -> String {
 }
 
 fn replace_macro(cap: &Captures) -> String {
-    format!("<span class='invocation'>{}</span>!(", &cap[1])
-}
-
-fn replace_caps(cap: &Captures) -> String {
-    format!("<span class='caps'>{}</span>", &cap[1])
+    format!("<span class='invocation'>{}!</span>(", &cap[1])
 }
 
 fn replace_string(cap: &Captures) -> String {
@@ -84,8 +84,8 @@ pub mod replace {
     }
 
     pub fn other(s: String) -> String {
-        STRING.replace_all(&CAPS.replace_all(
+        STRING.replace_all(&MULTILINE_COMMENT.replace_all(
             &COMMENT.replace_all(&s, &replace_comment),
-        &replace_caps), &replace_string).to_string()
+        &replace_multiline_comment), &replace_string).to_string()
     }
 }

@@ -17,12 +17,24 @@ $test1$
         color: purple;
     }}
 
-    .invocation, .type, .call {{
+    .type, .call {{
         color: blue;
     }}
 
-    .method {{
+    .invocation {{
+        color: orangered;
+    }}
+
+    .method, .string {{
         color: red;
+    }}
+
+    .comment {{
+        color: darkgreen;
+    }}
+
+    .caps {{
+        color: green;
     }}
 
    </style>
