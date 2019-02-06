@@ -12,7 +12,7 @@ lazy_static!{
 
     static ref MULTILINE_COMMENT: Regex = reg(r"/&#42;([\s\S]*?)&#42;/");
 
-    static ref COMMENT: Regex = reg(r"//([\s\S]*?)\n");
+    static ref COMMENT: Regex = reg(r"//([\s\S]*?)&#10;");
 
     static ref MODULE: Regex = reg(r"((\w|&#95;)+)::");
 
