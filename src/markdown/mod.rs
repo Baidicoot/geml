@@ -7,13 +7,13 @@ mod rust_syntax;
 
 //All of the Regexs
 lazy_static!{
-    static ref CODE_BLOCK: Regex = reg(r"```(\S*)\s*([\s\S]*?)\s*```");
+    static ref CODE_BLOCK: Regex = reg(r"```(\S*)\s+([\s\S]*?)\s+```");
 
     static ref CODE_INLINE: Regex = reg(r"(`)(.*?)(`)");
 
     static ref LINK: Regex = reg(r"\[([^\[]+)\]\(([^\)]+)\)");
 
-    static ref HEADING: Regex = reg(r"\n(#+)\s*(.*)");
+    static ref HEADING: Regex = reg(r"\n(#+)\s*(.+)");
 
     static ref EMPHASIS: Regex = reg(r"(\*{1,2})(.*?)(\*{1,2})");
 
