@@ -44,7 +44,7 @@ fn replace_returned(cap: &Captures) -> String {
 }
 
 fn replace_multiline_comment(cap: &Captures) -> String {
-    format!("<span class='comment'>/*{}*/</span>", &cap[1])
+    format!("<span class='comment'>/&#42;{}&#42;/</span>", &cap[1])
 }
 
 fn replace_comment(cap: &Captures) -> String {
