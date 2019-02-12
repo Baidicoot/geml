@@ -31,7 +31,7 @@ lazy_static!{
 
     static ref PARAGRAPH: Regex = reg(r"(\r\n\r\n|\n\n)([\s\S]+?)(\r\n\r\n|\n\n)");
 
-    static ref BLOCKQUOTE: Regex = reg(r"\n>(.*)");
+    static ref BLOCKQUOTE: Regex = reg(r"(\r\n|\n)>(.*)(\r\n|\n)");
 
     /* Markdown or HTML reserved symbols */
     static ref LT: Regex = reg(r"<");
