@@ -31,6 +31,8 @@ lazy_static!{
 
     static ref PARAGRAPH: Regex = reg(r"(\r\n\r\n|\n\n)([\s\S]+?)(\r\n\r\n|\n\n)");
 
+    static ref BLOCKQUOTE: Regex = reg(r"\n>(.*)");
+
     /* Markdown or HTML reserved symbols */
     static ref LT: Regex = reg(r"<");
 
@@ -80,6 +82,14 @@ fn code_inline_replacer(cap: &Captures) -> String {
     format!("<code>{}</code>", &cap[2])
 }
 
+fn strikethrough_replacer(cap: &Captures) -> String {
+    format!("<del>{}</del>", &cap[2])
+}
+
+fn blockquote_replacer(cap: &Captures) -> String {
+    format!("<blockquote>{}</blockquote>", &cap[1])
+}
+
 fn link_replacer(cap: &Captures) -> String {
     format!("<a href='{}'>{}</a>", &cap[2], &cap[1])
 }
@@ -114,7 +124,7 @@ fn ordered_replacer(cap: &Captures) -> String {
 
 //The main format function; call this to get markdown with the best results
 pub fn parse(s: String) -> String {
-    replace::paragraphs(replace::unordered(replace::ordered(replace::rules(replace::emphasis(replace::headings(replace::links(replace::code_inline(replace::code_blocks(s)))))))))
+    replace::paragraphs(replace::unordered(replace::ordered(replace::rules(replace::blockquotes(replace::strikethrough(replace::emphasis(replace::headings(replace::links(replace::code_inline(replace::code_blocks(s)))))))))))
 }
 
 //Individual markdown replacement functions.
@@ -127,6 +137,14 @@ pub mod replace {
 
     pub fn code_blocks(s: String) -> String {
         CODE_BLOCK.replace_all(&s, &code_block_replacer).to_string()
+    }
+
+    pub fn blockquotes(s: String) -> String {
+        BLOCKQUOTE.replace_all(&s, &blockquote_replacer).to_string()
+    }
+
+    pub fn strikethrough(s: String) -> String {
+        STRIKETHROUGH.replace_all(&s, strikethrough_replacer).to_string()
     }
 
     pub fn code_inline(s: String) -> String {
