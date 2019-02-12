@@ -87,7 +87,7 @@ fn strikethrough_replacer(cap: &Captures) -> String {
 }
 
 fn blockquote_replacer(cap: &Captures) -> String {
-    format!("<blockquote>{}</blockquote>", &cap[1])
+    format!("<blockquote>{}</blockquote>", &cap[2])
 }
 
 fn link_replacer(cap: &Captures) -> String {
