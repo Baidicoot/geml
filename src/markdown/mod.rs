@@ -33,6 +33,8 @@ lazy_static!{
 
     static ref BLOCKQUOTE: Regex = reg(r"(\r\n|\n)>(.*)(\r\n|\n)");
 
+    static ref IMG: Regex = reg(r"!\[([^\[]+)\]\(([^\)]+)\)");
+
     /* Markdown or HTML reserved symbols */
     static ref LT: Regex = reg(r"<");
 
@@ -122,9 +124,13 @@ fn ordered_replacer(cap: &Captures) -> String {
     format!("<ol>{}</ol>", items)
 }
 
+fn image_replacer(cap: &Captures) -> String {
+    format!("<img src='{}' alt='{}' />", &cap[1], &cap[2])
+}
+
 //The main format function; call this to get markdown with the best results
 pub fn parse(s: String) -> String {
-    replace::paragraphs(replace::unordered(replace::ordered(replace::rules(replace::blockquotes(replace::strikethrough(replace::emphasis(replace::headings(replace::links(replace::code_inline(replace::code_blocks(s)))))))))))
+    replace::paragraphs(replace::unordered(replace::ordered(replace::rules(replace::blockquotes(replace::strikethrough(replace::emphasis(replace::headings(replace::links(replace::images(replace::code_inline(replace::code_blocks(s))))))))))))
 }
 
 //Individual markdown replacement functions.
@@ -149,6 +155,10 @@ pub mod replace {
 
     pub fn code_inline(s: String) -> String {
         CODE_INLINE.replace_all(&s, &code_inline_replacer).to_string()
+    }
+
+    pub fn images(s: String) -> String {
+        IMG.replace_all(&s, &image_replacer).to_string()
     }
 
     pub fn links(s: String) -> String {
