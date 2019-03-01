@@ -7,19 +7,19 @@ mod rust_syntax;
 
 //All of the Regexs
 lazy_static!{
-    static ref CODE_BLOCK: Regex = reg(r"```(\S*)\s+([\s\S]*?)\s+```");
+    static ref CODE_BLOCK: Regex = reg(r"```(\S*)\s+([\s\S]+?)\s+```");
 
-    static ref CODE_INLINE: Regex = reg(r"(`)(.*?)(`)");
+    static ref CODE_INLINE: Regex = reg(r"(`)(.+?)(`)");
 
     static ref LINK: Regex = reg(r"\[([^\[]+)\]\(([^\)]+)\)");
 
     static ref HEADING: Regex = reg(r"\n(#+)[^\S\r\n]+(.+)");
 
-    static ref EMPHASIS: Regex = reg(r"(\*{1,2})(.*?)(\*{1,2})");
+    static ref EMPHASIS: Regex = reg(r"(\*{1,2})(.+?)(\*{1,2})");
 
-    static ref EMPHASIS_UNDER: Regex = reg(r"(_{1,2})(.*?)(_{1,2})");
+    static ref EMPHASIS_UNDER: Regex = reg(r"(_{1,2})(.+?)(_{1,2})");
 
-    static ref STRIKETHROUGH: Regex = reg(r"(\~\~)(.*?)(\~\~)");
+    static ref STRIKETHROUGH: Regex = reg(r"(\~\~)(.+?)(\~\~)");
 
     static ref HORIZONTAL: Regex = reg(r"\n((\-{3,})|(={3,})|(#{3,}))");
 
@@ -27,11 +27,9 @@ lazy_static!{
 
     static ref ORDERED: Regex = reg(r"(\n\s*([0-9]+\.)\s.*)+");
 
-    static ref BREAK: Regex = reg(r"\n\s*\n");
+    static ref PARAGRAPH: Regex = reg(r"(\r\n|\n)([\s\S]+?)(\r\n|\n)$");
 
-    static ref PARAGRAPH: Regex = reg(r"(\r\n\r\n|\n\n)([\s\S]+?)(\r\n\r\n|\n\n)");
-
-    static ref BLOCKQUOTE: Regex = reg(r"(\r\n|\n)>(.*)(\r\n|\n)");
+    static ref BLOCKQUOTE: Regex = reg(r"(\r\n|\n)>(.+)(\r\n|\n)");
 
     static ref IMG: Regex = reg(r"!\[([^\[]+)\]\(([^\)]+)\)");
 
@@ -97,7 +95,7 @@ fn link_replacer(cap: &Captures) -> String {
 }
 
 fn heading_replacer(cap: &Captures) -> String {
-    format!("\n<h{}>{}</h{}>", cap[1].len().to_string(), &cap[2], cap[1].len().to_string())
+    format!("<h{}>{}</h{}>", cap[1].len().to_string(), &cap[2], cap[1].len().to_string())
 }
 
 fn emphasis_replacer(cap: &Captures) -> String {
@@ -105,7 +103,7 @@ fn emphasis_replacer(cap: &Captures) -> String {
 }
 
 fn rule_replacer(_cap: &Captures) -> String {
-    format!("\n<hr />")
+    format!("<hr />")
 }
 
 fn unordered_replacer(cap: &Captures) -> String {
