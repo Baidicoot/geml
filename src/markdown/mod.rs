@@ -106,7 +106,6 @@ fn emphasis_replacer(cap: &Captures) -> String {
 }
 
 fn rule_replacer(cap: &Captures) -> String {
-    println!("Detected hr {}", &cap[0]);
     format!("<hr />")
 }
 
