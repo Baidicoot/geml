@@ -36,6 +36,27 @@ fn main() {
         color: green;
     }}
 
+    .ins {{
+        color: blue;
+    }}
+
+    .pointer {{
+        color: red;
+    }}
+
+    .disc {{
+        color: purple;
+    }}
+
+    .int {{
+        color: orangered;
+    }}
+
+    pre {{
+        background: #E0E0E0;
+        padding: 1rem 1rem;
+    }}
+
    </style>
    {}
    </html>", GemlFile::from_path(Path::new("test.geml")).unwrap().parse().unwrap().gemls[1].value.to_owned());

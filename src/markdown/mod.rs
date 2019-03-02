@@ -3,7 +3,8 @@ extern crate regex;
 use regex::{Regex, Captures};
 use crate::reg;
 
-mod rust_syntax;
+pub mod rust_syntax;
+pub mod rasm_syntax;
 
 //All of the Regexs
 lazy_static!{
@@ -73,6 +74,7 @@ fn paragraph_replacer(cap: &Captures) -> String {
 fn code_block_replacer(cap: &Captures) -> String {
     let code = match &cap[1] {
         "rust" => rust_syntax::parse(symbols(&cap[2])),
+        "rasm" => rasm_syntax::parse(symbols(&cap[2])),
         _ => symbols(&cap[2]),
     };
     format!("<pre>{}</pre>", code)
