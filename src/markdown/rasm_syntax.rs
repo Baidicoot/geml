@@ -12,7 +12,7 @@ lazy_static!{
 
     static ref LITERAL: Regex = reg(r"^([0-9]+|[A-Za-z])$");
 
-    static ref COMMENT: Regex = reg(r"&#35;.+(&#10;|$)");
+    static ref COMMENT: Regex = reg(r"&#35;.+$");
 }
 
 fn ins_replacer(cap: &Captures) -> String {
@@ -42,7 +42,7 @@ fn comment_replacer(cap: &Captures) -> String {
 }
 
 pub fn parse(s: String) -> String {
-    replace::comments(replace::instructions(s))
+    replace::instructions(replace::comments(s))
 }
 
 pub mod replace {
@@ -65,6 +65,11 @@ pub mod replace {
     }
 
     pub fn comments(s: String) -> String {
-        COMMENT.replace_all(&s, &comment_replacer).to_string()
+        s.split("&#10;")
+            .map(|x| {
+                COMMENT.replace_all(x, &comment_replacer).to_string()
+            })
+            .collect::<Vec<String>>()
+            .join("&#10;")
     }
 }

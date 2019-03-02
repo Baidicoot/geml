@@ -8,13 +8,13 @@ pub mod rasm_syntax;
 
 //All of the Regexs
 lazy_static!{
-    static ref CODE_BLOCK: Regex = reg(r"```(\S*)\s+([\s\S]+?)\s+```");
+    static ref CODE_BLOCK: Regex = reg(r"(\n|^)```(\S*)\s+([\s\S]+?)\s+```$");
 
     static ref CODE_INLINE: Regex = reg(r"(`)(.+?)(`)");
 
     static ref LINK: Regex = reg(r"\[([^\[]+)\]\(([^\)]+)\)");
 
-    static ref HEADING: Regex = reg(r"\n(#+)[^\S\r\n]+(.+)");
+    static ref HEADING: Regex = reg(r"(\n|^)(#+)(.+)$");
 
     static ref EMPHASIS: Regex = reg(r"(\*{1,2})(.+?)(\*{1,2})");
 
@@ -22,17 +22,17 @@ lazy_static!{
 
     static ref STRIKETHROUGH: Regex = reg(r"(\~\~)(.+?)(\~\~)");
 
-    static ref HORIZONTAL: Regex = reg(r"\n((\-{3,})|(={3,})|(#{3,}))");
+    static ref HORIZONTAL: Regex = reg(r"(\n|^)((\-{3,})|(={3,})|(#{3,}))$");
 
-    static ref UNORDERED: Regex = reg(r"(\n\s*(\-|\+)\s.*)+");
+    static ref UNORDERED: Regex = reg(r"((\n|^)(\-|\+)\s.*$)+");
 
-    static ref ORDERED: Regex = reg(r"(\n\s*([0-9]+\.)\s.*)+");
+    static ref ORDERED: Regex = reg(r"((\n|^)([0-9]+\.)\s.*$)+");
 
-    static ref PARAGRAPH: Regex = reg(r"(\r\n|\n)([\s\S]+?)(\r\n|\n)$");
+    static ref PARAGRAPH: Regex = reg(r"^\n([\s\S]+?)\n$");
 
-    static ref BLOCKQUOTE: Regex = reg(r"(\r\n|\n)>(.+)(\r\n|\n)");
+    static ref BLOCKQUOTE: Regex = reg(r"(\n|^)>(.+)$");
 
-    static ref IMG: Regex = reg(r"!\[([^\[]+)\]\(([^\)]+)\)");
+    static ref IMG: Regex = reg(r"^!\[([^\[]+)\]\(([^\)]+)\)");
 
     /* Markdown or HTML reserved symbols */
     static ref LT: Regex = reg(r"<");
@@ -63,19 +63,20 @@ fn symbols(s: &str) -> String {
 
 /* The replacer functions */
 
-fn break_replacer(cap: &str) -> String {
-    LFEED.replace_all(cap, "<br />").to_string()
+fn break_replacer(_: &Captures) -> String {
+    format!("<br />")
 }
 
 fn paragraph_replacer(cap: &Captures) -> String {
-    format!("<p>{}</p>", break_replacer(&cap[2]))
+    println!("Detected paragraph: {}", &cap[1]);
+    format!("<p>{}</p>", replace::line_breaks(cap[1].to_string()))
 }
 
 fn code_block_replacer(cap: &Captures) -> String {
-    let code = match &cap[1] {
-        "rust" => rust_syntax::parse(symbols(&cap[2])),
-        "rasm" => rasm_syntax::parse(symbols(&cap[2])),
-        _ => symbols(&cap[2]),
+    let code = match &cap[2] {
+        "rust" => rust_syntax::parse(symbols(&cap[3])),
+        "rasm" => rasm_syntax::parse(symbols(&cap[3])),
+        _ => symbols(&cap[3]),
     };
     format!("<pre>{}</pre>", code)
 }
@@ -89,7 +90,7 @@ fn strikethrough_replacer(cap: &Captures) -> String {
 }
 
 fn blockquote_replacer(cap: &Captures) -> String {
-    format!("<blockquote>{}</blockquote>", &cap[2])
+    format!("<blockquote>{}</blockquote>", &cap[1])
 }
 
 fn link_replacer(cap: &Captures) -> String {
@@ -97,14 +98,15 @@ fn link_replacer(cap: &Captures) -> String {
 }
 
 fn heading_replacer(cap: &Captures) -> String {
-    format!("<h{}>{}</h{}>", cap[1].len().to_string(), &cap[2], cap[1].len().to_string())
+    format!("<h{len}>{}</h{len}>", &cap[3], len = cap[2].len().to_string())
 }
 
 fn emphasis_replacer(cap: &Captures) -> String {
     format!("<{}>{}</{}>", if{cap[1].len()==1}{"em"}else{"strong"}, &cap[2], if{cap[1].len()==1}{"em"}else{"strong"})
 }
 
-fn rule_replacer(_cap: &Captures) -> String {
+fn rule_replacer(cap: &Captures) -> String {
+    println!("Detected hr {}", &cap[0]);
     format!("<hr />")
 }
 
@@ -130,7 +132,7 @@ fn image_replacer(cap: &Captures) -> String {
 
 //The main format function; call this to get markdown with the best results
 pub fn parse(s: String) -> String {
-    replace::paragraphs(replace::unordered(replace::ordered(replace::rules(replace::blockquotes(replace::strikethrough(replace::emphasis(replace::headings(replace::links(replace::images(replace::code_inline(replace::code_blocks(s))))))))))))
+    replace::paragraphs(replace::unordered(replace::ordered(replace::blockquotes(replace::strikethrough(replace::emphasis(replace::headings(replace::rules(replace::links(replace::images(replace::code_inline(replace::code_blocks(s))))))))))))
 }
 
 //Individual markdown replacement functions.
@@ -139,6 +141,10 @@ pub mod replace {
 
     pub fn paragraphs(s: String) -> String {
         PARAGRAPH.replace_all(&s, &paragraph_replacer).to_string()
+    }
+
+    pub fn line_breaks(s: String) -> String {
+        LFEED.replace_all(&s, &break_replacer).to_string()
     }
 
     pub fn code_blocks(s: String) -> String {
