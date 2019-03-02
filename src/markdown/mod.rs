@@ -68,7 +68,6 @@ fn break_replacer(_: &Captures) -> String {
 }
 
 fn paragraph_replacer(cap: &Captures) -> String {
-    println!("Detected paragraph: {}", &cap[1]);
     format!("<p>{}</p>", replace::line_breaks(cap[1].to_string()))
 }
 
