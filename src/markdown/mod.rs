@@ -81,7 +81,7 @@ fn code_block_replacer(cap: &Captures) -> String {
 }
 
 fn code_inline_replacer(cap: &Captures) -> String {
-    format!("<code>{}</code>", &cap[2])
+    format!("<code>{}</code>", symbols(&cap[2]))
 }
 
 fn strikethrough_replacer(cap: &Captures) -> String {

@@ -8,6 +8,8 @@ lazy_static!{
 
     static ref OPERAND: Regex = reg(r": ((\w|&#95;|&amp;)+)");
 
+    static ref GENERIC: Regex = reg(r"(&lt;|&gt;, )(\w+)");
+
     static ref RETURNED: Regex = reg(r"&#45;&gt; ((\w|&#95;|&amp;)+)");
 
     static ref MULTILINE_COMMENT: Regex = reg(r"/&#42;([\s\S]*?)&#42;/");
@@ -37,6 +39,10 @@ fn replace_method(cap: &Captures) -> String {
 
 fn replace_operand(cap: &Captures) -> String {
     format!(": <span class='type'>{}</span>", &cap[1])
+}
+
+fn replace_generic(cap: &Captures) -> String {
+    format!("{}<span class='type'>{}</span>", &cap[1], &cap[2])
 }
 
 fn replace_returned(cap: &Captures) -> String {
@@ -74,7 +80,7 @@ pub mod replace {
     }
 
     pub fn types(s: String) -> String {
-        RETURNED.replace_all(&OPERAND.replace_all(&s, &replace_operand), &replace_returned).to_string()
+        RETURNED.replace_all(&OPERAND.replace_all(&GENERIC.replace_all(&s, &replace_generic), &replace_operand), &replace_returned).to_string()
     }
 
     pub fn calls(s: String) -> String {
