@@ -157,7 +157,7 @@ impl Geml {
                     tags.insert(cap[1].to_string(), cap[2].to_string());
                     text_start = cap.get(0).unwrap().end();
                 }
-                print!("BLAH")
+                print!("BLAH");
                 let value = string[text_start..].trim().to_string();
                 Geml {
                     key: s[*x[0]..*x[1]].to_string(),
