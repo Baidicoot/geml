@@ -1,6 +1,6 @@
 [package]
 name = "geml"
-version = "1.1.19"
+version = "1.1.20"
 authors = ["Aidan K. Ewart <aidanprattewart@gmail.com>"]
 edition = "2018"
 
