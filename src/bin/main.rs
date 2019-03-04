@@ -59,7 +59,7 @@ fn main() {
 
    </style>
    {}
-   </html>", GemlFile::from_path(Path::new("test.geml")).unwrap().parse().unwrap().gemls[1].value.to_owned());
+   </html>", GemlFile::from_path(Path::new("test.geml")).unwrap().parse().unwrap().gemls[0].value.to_owned());
    fs::write("output.html", content).unwrap();
    println!("Application took {}ms.", application_start.elapsed().as_millis());
 }

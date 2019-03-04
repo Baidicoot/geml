@@ -150,7 +150,6 @@ impl Geml {
             .step_by(2)
             .filter(|x| { x.len() == 3 })
             .map(|x| {
-                println!("Annoying test message");
                 let string = &s[*x[1]..*x[2]];
                 let mut text_start = 0;
                 let mut tags = HashMap::new();
