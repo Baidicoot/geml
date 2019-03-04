@@ -151,6 +151,7 @@ impl Geml {
             .filter(|x| { x.len() == 3 })
             .map(|x| {
                 let string = &s[*x[1]..*x[2]];
+                println!("Chunk from {} to {}: {}", x[1], x[2], &string);
                 let mut text_start = 0;
                 let mut tags = HashMap::new();
                 for cap in TAGS.captures_iter(&string) {
