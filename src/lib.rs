@@ -159,7 +159,7 @@ impl Geml {
                 }
                 let value = string[text_start..].trim().to_string();
                 Geml {
-                    key: s[*x[0]..*x[1]].to_string(),
+                    key: s[*x[0]+1..*x[1]-1].to_string(),
                     value,
                     tags,
                 }
